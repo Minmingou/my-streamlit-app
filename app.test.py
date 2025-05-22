@@ -242,7 +242,9 @@ if user_input:
         st.pyplot(plt)
 
     if show_table:
+        df.index = df.index.tz_localize(None)
         last_10 = df.tail(10).copy()
+        
         # 컬럼명 언어별 변환
         rename_cols = {
             'Open': T['open'],
@@ -252,15 +254,21 @@ if user_input:
             'Volume': T['volume']
         }
         last_10 = last_10.rename(columns=rename_cols)
-        last_10['Date'] = last_10.index.strftime('%Y-%m-%d')
-        last_10 = last_10[['Date', T['open'], T['high'], T['low'], T['close'], T['volume']]]
+        last_10['Date'] = last_10.index.date.astype(str)
+        #last_10['Date'] = last_10.index.strftime('%Y-%m-%d')
+        last_10 = last_10[[T['open'], T['high'], T['low'], T['close'], T['volume']]]
         # 변동폭, 변동률(%) 추가
         last_10[T['price_change']] = last_10[T['close']].diff()
         last_10[T['price_change_pct']] = last_10[T['close']].pct_change() * 100
+        last_10 = last_10.iloc[1:]
         st.subheader(T["table_title"])
         st.dataframe(last_10.style.format({
             T['price_change']: "{:.2f}",
-            T['price_change_pct']: "{:.2f}%"
+            T['price_change_pct']: "{:.2f}%",
+            T['open']: "{:.2f}",
+            T['high']: "{:.2f}",
+            T['low']: "{:.2f}",
+            T['close']: "{:.2f}"
         }))
     if show_finance:
         st.subheader(T["financial_summary"])
